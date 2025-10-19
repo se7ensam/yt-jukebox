@@ -1,9 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addVideoToPlaylist, searchVideos } from './youtube';
+import { addVideoToPlaylist, searchVideos, handleOAuthCallback } from './youtube';
 import type { Video } from './definitions';
 import { sleep } from './utils';
+import { redirect } from 'next/navigation';
 
 export interface SearchState {
   songs?: Video[];
@@ -46,4 +47,10 @@ export async function addSongToPlaylistAction(video: Video) {
   } catch (error: any) {
     return { error: error.message || 'Failed to add song to playlist.' };
   }
+}
+
+export async function handleOAuthCallbackAction() {
+  await handleOAuthCallback();
+  revalidatePath('/host');
+  redirect('/host');
 }

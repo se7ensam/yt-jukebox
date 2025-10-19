@@ -2,15 +2,14 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { handleOAuthCallback, isHostAuthenticated, logoutHost, getAuthUrl } from '@/lib/youtube';
+import { isHostAuthenticated, logoutHost, getAuthUrl } from '@/lib/youtube';
 import { revalidatePath } from 'next/cache';
 import { CheckCircle, LogIn, LogOut } from 'lucide-react';
+import { handleOAuthCallbackAction } from '@/lib/actions';
 
-export default async function HostPage({ searchParams }: { searchParams: { authed?: string } }) {
-  if (searchParams.authed === 'true') {
-    await handleOAuthCallback();
-    revalidatePath('/host');
-    redirect('/host');
+export default async function HostPage({ searchParams }: { searchParams?: { code?: string; authed?: string } }) {
+  if (searchParams?.authed === 'true') {
+    await handleOAuthCallbackAction();
   }
 
   const isAuthenticated = await isHostAuthenticated();
