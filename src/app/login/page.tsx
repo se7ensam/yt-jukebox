@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase/provider';
 
 import { Button } from '@/components/ui/button';
@@ -31,8 +31,8 @@ export default function LoginPage() {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: 'admin@example.com',
+      password: 'password',
     },
   });
 
@@ -46,14 +46,31 @@ export default function LoginPage() {
         });
         router.push('/host');
       } catch (error: any) {
-        // In a real app, you might want to create a user if they don't exist
-        // For this admin-only use case, we'll just show an error
-        console.error('Login error:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Login Failed',
-          description: error.message || 'Invalid credentials. Please try again.',
-        });
+        if (error.code === 'auth/user-not-found') {
+          // If user doesn't exist, create a new one
+          try {
+            await createUserWithEmailAndPassword(auth, data.email, data.password);
+            toast({
+              title: 'Admin Account Created',
+              description: 'Redirecting to host dashboard...',
+            });
+            router.push('/host');
+          } catch (creationError: any) {
+            console.error('Account creation error:', creationError);
+            toast({
+              variant: 'destructive',
+              title: 'Account Creation Failed',
+              description: creationError.message || 'Could not create an admin account.',
+            });
+          }
+        } else {
+          console.error('Login error:', error);
+          toast({
+            variant: 'destructive',
+            title: 'Login Failed',
+            description: error.message || 'Invalid credentials. Please try again.',
+          });
+        }
       }
     });
   };
