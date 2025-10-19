@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { Search, Loader2 } from 'lucide-react';
 
@@ -24,7 +25,7 @@ function SearchButton() {
 }
 
 export function SearchComponent() {
-  const [state, formAction] = useFormState(searchSongsAction, initialState);
+  const [state, formAction] = useActionState(searchSongsAction, initialState);
 
   return (
     <Card>
