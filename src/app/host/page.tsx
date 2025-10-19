@@ -23,21 +23,23 @@ export default function HostPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
+    // Redirect to login if user is not loaded and not present
     if (!isUserLoading && !user) {
       router.push('/login');
+      return;
     }
-  }, [user, isUserLoading, router]);
 
-  useEffect(() => {
-    async function checkYouTubeAuth() {
-      if (user) {
+    // Only proceed if we have a user
+    if (user) {
+      const checkYouTubeAuth = async () => {
         setIsCheckingAuth(true);
         const code = searchParams.get('code');
-        const authed = searchParams.get('authed');
-
-        if (code || authed) {
+        
+        // If there's an auth code in the URL, handle the callback first
+        if (code) {
           await handleOAuthCallback();
-          router.replace('/host'); // Use replace to avoid re-running on refresh
+          // Use replace to remove the code from URL and prevent re-running on refresh
+          router.replace('/host'); 
         }
 
         const authenticated = await isHostAuthenticated();
@@ -47,10 +49,11 @@ export default function HostPage() {
           setAuthUrl(url);
         }
         setIsCheckingAuth(false);
-      }
+      };
+      
+      checkYouTubeAuth();
     }
-    checkYouTubeAuth();
-  }, [user, searchParams, router]);
+  }, [user, isUserLoading, searchParams, router]);
 
 
   const handleLogout = () => {

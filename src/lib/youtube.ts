@@ -39,7 +39,7 @@ export async function isHostAuthenticated(): Promise<boolean> {
 export async function getAuthUrl(): Promise<string> {
   // In a real app, this would generate a Google OAuth URL.
   // Here, we just simulate the flow by providing a link that "completes" the auth.
-  return '/host?authed=true';
+  return '/host?code=mock_auth_code';
 }
 
 // Simulate handling the OAuth callback
