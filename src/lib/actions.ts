@@ -1,10 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addVideoToPlaylist, searchVideos, handleOAuthCallback } from './youtube';
+import { addVideoToPlaylist, searchVideos, handleOAuthCallback as handleYouTubeOAuthCallback } from './youtube';
 import type { Video } from './definitions';
 import { sleep } from './utils';
-import { redirect } from 'next/navigation';
 
 export interface SearchState {
   songs?: Video[];
@@ -35,11 +34,6 @@ export async function searchSongsAction(
 
 export async function addSongToPlaylistAction(video: Video) {
   try {
-    // Simulate auth check
-    // const isAuthenticated = await isHostAuthenticated();
-    // if (!isAuthenticated) {
-    //   return { error: 'Host is not authenticated.' };
-    // }
     await sleep(700); // Simulate network delay
     await addVideoToPlaylist(video);
     revalidatePath('/');
@@ -47,10 +41,4 @@ export async function addSongToPlaylistAction(video: Video) {
   } catch (error: any) {
     return { error: error.message || 'Failed to add song to playlist.' };
   }
-}
-
-export async function handleOAuthCallbackAction() {
-  await handleOAuthCallback();
-  // This action is being triggered from a page render, so we cannot revalidate or redirect here.
-  // The revalidation and redirect will be handled on the page itself.
 }

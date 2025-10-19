@@ -4,36 +4,21 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user of the TubeQueue application, including admin users.",
+      "description": "Represents a user of the TubeQueue application, specifically the admin.",
       "properties": {
-        "id": {
+        "uid": {
           "type": "string",
-          "description": "Unique identifier for the user entity."
-        },
-        "username": {
-          "type": "string",
-          "description": "The user's username, used for login."
-        },
-        "passwordHash": {
-          "type": "string",
-          "description": "Hashed password for authentication. Note: Actual password storage should follow security best practices (salting, key derivation functions)."
+          "description": "The unique identifier from Firebase Authentication."
         },
         "email": {
           "type": "string",
-          "description": "The user's email address.",
+          "description": "The user's email address, used for login.",
           "format": "email"
-        },
-        "isAdmin": {
-          "type": "boolean",
-          "description": "Indicates whether the user is an administrator."
         }
       },
       "required": [
-        "id",
-        "username",
-        "passwordHash",
-        "email",
-        "isAdmin"
+        "uid",
+        "email"
       ]
     },
     "YouTubeAccount": {
@@ -115,8 +100,7 @@
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
@@ -128,33 +112,17 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profiles, including authentication information and admin status.",
+          "description": "Stores user profiles for admin users.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier for the user."
+              "description": "The unique identifier for the user (matches Firebase Auth UID)."
             }
           ]
         }
       },
       {
-        "path": "roles_admin/{userId}",
-        "definition": {
-          "entityName": "AdminRole",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Collection used to indicate administrator roles. The existence of a document for a given userId grants admin privileges.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who has admin role."
-            }
-          ]
-        }
-      },
-      {
-        "path": "users/{userId}/youtubeAccounts/{accountId}",
+        "path": "users/{userId}/youtubeAccount",
         "definition": {
           "entityName": "YouTubeAccount",
           "schema": {
@@ -165,31 +133,19 @@
             {
               "name": "userId",
               "description": "The unique identifier for the user."
-            },
-            {
-              "name": "accountId",
-              "description": "The unique identifier for the YouTube account."
             }
           ]
         }
       },
       {
-        "path": "users/{userId}/youtubeAccounts/{accountId}/playlistEntries/{entryId}",
+        "path": "playlistEntries/{entryId}",
         "definition": {
           "entityName": "PlaylistEntry",
           "schema": {
             "$ref": "#/backend/entities/PlaylistEntry"
           },
-          "description": "Stores playlist entries for a specific YouTube account. Includes denormalized 'userId' and 'accountId' for authorization independence.",
+          "description": "Stores playlist entries for the active YouTube account.",
           "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
-            {
-              "name": "accountId",
-              "description": "The unique identifier for the YouTube account."
-            },
             {
               "name": "entryId",
               "description": "The unique identifier for the playlist entry."
@@ -197,7 +153,6 @@
           ]
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed to support the TubeQueue application, focusing on user authentication (including admin roles), YouTube account linking, and managing playlist entries. Key considerations include authorization independence, clear access models, and data clarity.\n\n1.  **User Authentication and Authorization:**\n    *   The `users` collection stores user information, including credentials (hashed password) and admin status (`isAdmin`). This supports basic password authentication and admin role management. A separate `roles_admin` collection is used for more robust admin role assignment. The existence of a document in `roles_admin/{userId}` grants admin privileges.\n\n2.  **YouTube Account Management:**\n    *   The `users/{userId}/youtubeAccounts/{accountId}` structure enforces a one-to-many relationship between users and YouTube accounts. This allows multiple YouTube accounts to be linked to a single user, although the current schema appears to only support one.\n    *   Storing YouTube account details as a subcollection ensures that account access is scoped to the user and simplifies security rules.\n\n3.  **Playlist Management:**\n    *   The `users/{userId}/youtubeAccounts/{accountId}/playlistEntries/{entryId}` structure establishes the relationship between user accounts and playlist entries. This structure is highly secure and easy to debug. The denormalized `userId` and `accountId` within each `playlistEntry` facilitate independent authorization rules.\n\n**Authorization Independence (Denormalization):**\n*   `playlistEntries` include `userId` and `accountId` which are denormalized from parent documents. This ensures that access to playlist entries can be validated independently of the parent documents, removing the need for `get()` calls in security rules.\n\n**QAPs (Rules are Not Filters):**\n*   The structure supports secure `list` operations. The path-based ownership model `/users/{userId}/youtubeAccounts/{accountId}/playlistEntries/{entryId}` allows listing playlist entries securely based on the authenticated user's ID without needing to filter based on data within the documents.\n*   Admin role checks are performed via document existence in the `roles_admin` collection enabling efficient authorization checks.\n\n**Clarity of Intent:**\n*   The database structure clearly reflects the relationships between users, YouTube accounts, and playlist entries, making security rules easier to write and understand.\n\n**DBAC:**\n*   Authorization relies on `request.auth.uid` and database roles (document existence in `roles_admin`), avoiding custom claims.\n\n**Invariants:**\n*   The structure supports the integrity of ownership. The path `/users/{userId}/youtubeAccounts/{accountId}` ensures that YouTube accounts are always owned by a user.\n"
+    ]
   }
 }
