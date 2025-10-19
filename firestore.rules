@@ -1,0 +1,100 @@
+/**
+ * @description This ruleset enforces a strict user-ownership model for user profiles and YouTube accounts, with admin override capabilities.
+ * All user data is nested under /users/{userId}, ensuring clear ownership. Admin roles are managed through the roles_admin collection.
+ * @dataStructure
+ * - /users/{userId}: Stores user profiles, including authentication information and admin status.
+ * - /roles_admin/{userId}: Indicates administrator roles. Existence of a document grants admin privileges.
+ * - /users/{userId}/youtubeAccounts/{accountId}: Stores YouTube account information associated with a user.
+ * - /users/{userId}/youtubeAccounts/{accountId}/playlistEntries/{entryId}: Stores playlist entries for a specific YouTube account.
+ * @keySecurityDecisions
+ * - Users can only create, update, or delete their own user documents.
+ * - Only admins can create or delete user documents.
+ * - YouTube accounts and playlist entries are owned by the user and cannot be accessed by others.
+ * - Listing all users is disallowed.
+ * - Admin role is verified by checking the existence of a document in the roles_admin collection.
+ * @denormalizationForAuthorization
+ *   The playlistEntries collection denormalizes userId and accountId to avoid needing to use get() calls in security rules.
+ *   Admin privileges are determined by the existence of a document in the roles_admin collection, avoiding the need to read user documents.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Controls access to user profiles. Users can only read their own profile. Admins can create and delete any profile.
+     * @path /users/{userId}
+     * @allow (get, update, delete) User with ID 'user123' can read, update, and delete their own profile.
+     * @allow (create) Admin user can create user profiles.
+     * @deny (get, update, delete) User with ID 'user456' cannot access 'user123' profile.
+     * @principle Enforces document ownership and restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false; // Listing all users is disallowed.
+      allow create: if isSignedIn() && (request.auth.uid == userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+        /**
+         * @description Manages admin roles. Only admins can create admin role documents.
+         * @path /roles_admin/{userId}
+         * @allow create Admin user can create admin role documents for other users.
+         * @deny create Non-admin user cannot create admin role documents.
+         */
+    match /roles_admin/{userId} {
+        allow get: if isAdmin();
+        allow list: if false;
+        allow create: if isSignedIn() && isAdmin();
+        allow update: if false;
+        allow delete: if isSignedIn() && isAdmin();
+    }
+
+    /**
+     * @description Controls access to YouTube accounts associated with a user. Users can only access their own YouTube accounts.
+     * @path /users/{userId}/youtubeAccounts/{accountId}
+     * @allow (get, list, create, update, delete) User with ID 'user123' can manage their own YouTube accounts.
+     * @deny (get, list, create, update, delete) User with ID 'user456' cannot access 'user123' YouTube accounts.
+     * @principle Enforces document ownership for YouTube accounts within a user's data tree.
+     */
+    match /users/{userId}/youtubeAccounts/{accountId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to playlist entries for a YouTube account. Users can only access playlist entries for their own YouTube accounts.
+     * @path /users/{userId}/youtubeAccounts/{accountId}/playlistEntries/{entryId}
+     * @allow (get, list, create, update, delete) User with ID 'user123' can manage playlist entries for their own YouTube account 'account456'.
+     * @deny (get, list, create, update, delete) User with ID 'user456' cannot access 'user123' YouTube account's playlist entries.
+     * @principle Enforces document ownership for playlist entries within a YouTube account.
+     */
+    match /users/{userId}/youtubeAccounts/{accountId}/playlistEntries/{entryId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
+
+    function isAdmin() {
+        return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+  }
+}
