@@ -25,10 +25,14 @@ function ensureFirebaseUser() {
 
 // Simulate checking if the host is authenticated
 export async function isHostAuthenticated(): Promise<boolean> {
-  // Now this depends on a user being logged in AND having tokens.
-  const user = ensureFirebaseUser();
-  // For now, we'll keep the simple db check, but this could be moved to Firestore.
-  return !!db.tokens.accessToken;
+  try {
+    // Now this depends on a user being logged in AND having tokens.
+    const user = ensureFirebaseUser();
+    // For now, we'll keep the simple db check, but this could be moved to Firestore.
+    return !!db.tokens.accessToken;
+  } catch (error) {
+    return false;
+  }
 }
 
 // Simulate getting the OAuth URL
@@ -81,7 +85,14 @@ export async function addVideoToPlaylist(video: Video): Promise<void> {
 // Simulate fetching the current playlist
 export async function getPlaylist(): Promise<Video[]> {
   // In a real app, this might fetch from YouTube API or Firestore.
-  return [...db.playlist];
+  // The 'db' object might not be initialized in some server environments.
+  // We'll wrap this in a try-catch and return an empty array on failure.
+  try {
+    return [...db.playlist];
+  } catch (error) {
+    console.error('Failed to get playlist, returning empty array.', error);
+    return [];
+  }
 }
 
 // Simulate host logging out
