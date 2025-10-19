@@ -51,6 +51,6 @@ export async function addSongToPlaylistAction(video: Video) {
 
 export async function handleOAuthCallbackAction() {
   await handleOAuthCallback();
-  revalidatePath('/host');
-  redirect('/host');
+  // This action is being triggered from a page render, so we cannot revalidate or redirect here.
+  // The revalidation and redirect will be handled on the page itself.
 }

@@ -2,15 +2,16 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { isHostAuthenticated, logoutHost, getAuthUrl } from '@/lib/youtube';
+import { isHostAuthenticated, logoutHost, getAuthUrl, handleOAuthCallback } from '@/lib/youtube';
 import { revalidatePath } from 'next/cache';
 import { CheckCircle, LogIn, LogOut } from 'lucide-react';
-import { handleOAuthCallbackAction } from '@/lib/actions';
 
 export default async function HostPage({ searchParams }: { searchParams?: { code?: string; authed?: string } }) {
   if (searchParams?.code || searchParams?.authed) {
-    await handleOAuthCallbackAction();
-    // The action handles the redirect, but we'll redirect here as a fallback.
+    await handleOAuthCallback();
+    // Revalidate the path to ensure the UI updates with the new auth state
+    revalidatePath('/host');
+    // Redirect to clear the URL parameters and prevent the callback from running again
     redirect('/host');
   }
 
