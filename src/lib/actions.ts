@@ -1,9 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { addVideoToPlaylist, searchVideos, handleOAuthCallback as handleYouTubeOAuthCallback } from './youtube';
+import { addVideoToPlaylist, searchVideos } from './youtube';
 import type { Video } from './definitions';
 import { sleep } from './utils';
+import { redirect } from 'next/navigation';
 
 export interface SearchState {
   songs?: Video[];

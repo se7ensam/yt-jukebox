@@ -56,7 +56,9 @@ export default function HostPage() {
   const handleLogout = () => {
     startTransition(async () => {
       await logoutHost(); // Clears YouTube tokens
-      await signOut(auth); // Signs out from Firebase
+      if (auth) {
+        await signOut(auth); // Signs out from Firebase
+      }
       // The useEffect hook will redirect to /login
     });
   };
@@ -94,11 +96,15 @@ export default function HostPage() {
               <p className="text-muted-foreground">
                 To allow guests to add songs, you need to connect your YouTube account.
               </p>
-              <Button asChild size="lg">
-                <Link href={authUrl}>
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Connect with Google
-                </Link>
+              <Button asChild size="lg" disabled={!authUrl}>
+                {authUrl ? (
+                   <Link href={authUrl}>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Connect with Google
+                  </Link>
+                ) : (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
               </Button>
             </div>
           )}
