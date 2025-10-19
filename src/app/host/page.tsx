@@ -9,9 +9,8 @@ import { CheckCircle, LogIn, LogOut } from 'lucide-react';
 export default async function HostPage({ searchParams }: { searchParams?: { code?: string; authed?: string } }) {
   if (searchParams?.code || searchParams?.authed) {
     await handleOAuthCallback();
-    // Revalidate the path to ensure the UI updates with the new auth state
-    revalidatePath('/host');
-    // Redirect to clear the URL parameters and prevent the callback from running again
+    // Redirect to clear the URL parameters and prevent the callback from running again.
+    // This also effectively reloads the page, fetching the new auth state.
     redirect('/host');
   }
 
