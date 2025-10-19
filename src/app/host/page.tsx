@@ -55,11 +55,11 @@ export default function HostPage() {
 
   const handleLogout = () => {
     startTransition(async () => {
-      await logoutHost(); // Clears YouTube tokens
+      await logoutHost(); // Clears YouTube tokens and playlist
       if (auth) {
         await signOut(auth); // Signs out from Firebase
       }
-      // The useEffect hook will redirect to /login
+      // The useEffect will catch the user change and redirect to /login
     });
   };
 
