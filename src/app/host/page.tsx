@@ -8,8 +8,10 @@ import { CheckCircle, LogIn, LogOut } from 'lucide-react';
 import { handleOAuthCallbackAction } from '@/lib/actions';
 
 export default async function HostPage({ searchParams }: { searchParams?: { code?: string; authed?: string } }) {
-  if (searchParams?.authed === 'true') {
+  if (searchParams?.code || searchParams?.authed) {
     await handleOAuthCallbackAction();
+    // The action handles the redirect, but we'll redirect here as a fallback.
+    redirect('/host');
   }
 
   const isAuthenticated = await isHostAuthenticated();
