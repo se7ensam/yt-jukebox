@@ -46,7 +46,8 @@ export default function LoginPage() {
         });
         router.push('/host');
       } catch (error: any) {
-        if (error.code === 'auth/user-not-found') {
+        // Handle both 'user-not-found' and 'invalid-credential' for broader compatibility
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
           // If user doesn't exist, create a new one
           try {
             await createUserWithEmailAndPassword(auth, data.email, data.password);
