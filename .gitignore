@@ -39,7 +39,7 @@ next-env.d.ts
 
 .genkit/*
 .env*
-
+.YOUTUBE_AUTH_STATUS.md
 # firebase
 firebase-debug.log
 firestore-debug.log
