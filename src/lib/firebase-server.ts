@@ -20,11 +20,6 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || configFromFile.appId,
 };
 
-console.log('Firebase Server Config:');
-console.log('- Project ID:', firebaseConfig.projectId);
-console.log('- From env:', process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
-console.log('- From file:', configFromFile.projectId);
-
 /**
  * Initialize Firebase for server-side use (without authentication)
  * This uses the client SDK but works in server context
@@ -35,15 +30,19 @@ export function initializeFirebaseServer() {
   }
 
   try {
-    if (getApps().length === 0) {
-      serverApp = initializeApp(firebaseConfig, 'server-app');
+    // Check if an app with our name already exists
+    const existingApp = getApps().find(app => app.name === 'server-app');
+    
+    if (existingApp) {
+      serverApp = existingApp;
     } else {
-      serverApp = getApps()[0];
+      // Initialize with explicit config (no auto-initialization)
+      serverApp = initializeApp(firebaseConfig, 'server-app');
     }
     
     serverFirestore = getFirestore(serverApp);
     
-    console.log('Firebase Server initialized (client SDK)');
+    console.log('Firebase Server initialized with project:', firebaseConfig.projectId);
     return { app: serverApp, firestore: serverFirestore };
   } catch (error) {
     console.error('Failed to initialize Firebase Server:', error);

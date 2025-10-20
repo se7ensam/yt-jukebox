@@ -8,12 +8,12 @@ import { isHostAuthenticated, logoutHost, getAuthUrl, handleOAuthCallback, getUs
 import { usePlaylistSettings } from '@/hooks/use-playlist-settings';
 import { CheckCircle, LogIn, LogOut, Loader2, Music, Settings } from 'lucide-react';
 import { useUser } from '@/firebase';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '@/firebase/provider';
 
-export default function HostPage() {
+function HostPageContent() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const router = useRouter();
@@ -270,5 +270,17 @@ export default function HostPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function HostPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    }>
+      <HostPageContent />
+    </Suspense>
   );
 }
