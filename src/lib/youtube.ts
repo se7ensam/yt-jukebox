@@ -341,13 +341,48 @@ export async function addVideoToPlaylist(video: Video): Promise<void> {
 
 // Simulate fetching the current playlist
 export async function getPlaylist(): Promise<Video[]> {
-  // In a real app, this might fetch from YouTube API or Firestore.
-  // The 'db' object might not be initialized in some server environments.
-  // We'll wrap this in a try-catch and return an empty array on failure.
   try {
-    return [...db.playlist];
+    // Try to fetch the actual YouTube playlist songs
+    const { getJukeboxStatusServer } = await import('./firebase-server');
+    
+    // Get jukebox status to find the selected playlist
+    const status = await getJukeboxStatusServer();
+    
+    if (!status || !status.selectedPlaylistId || !status.accessToken) {
+      console.log('No active jukebox or playlist selected, returning empty queue');
+      return [];
+    }
+    
+    // Fetch playlist items from YouTube
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${status.selectedPlaylistId}&maxResults=50`,
+      {
+        headers: {
+          'Authorization': `Bearer ${status.accessToken}`,
+        },
+      }
+    );
+    
+    if (!response.ok) {
+      console.error('Failed to fetch playlist items from YouTube');
+      return [];
+    }
+    
+    const data = await response.json();
+    
+    // Transform YouTube playlist items to Video format
+    const videos: Video[] = data.items?.map((item: any) => ({
+      id: item.snippet.resourceId.videoId,
+      title: item.snippet.title,
+      channel: item.snippet.channelTitle || item.snippet.videoOwnerChannelTitle || 'Unknown',
+      thumbnail: item.snippet.thumbnails?.default?.url || 'https://placehold.co/120x90/1f2937/ffffff?text=Video',
+    })) || [];
+    
+    console.log(`Fetched ${videos.length} songs from YouTube playlist`);
+    return videos;
+    
   } catch (error) {
-    console.error('Failed to get playlist, returning empty array.', error);
+    console.error('Failed to get playlist from YouTube, returning empty array:', error);
     return [];
   }
 }
