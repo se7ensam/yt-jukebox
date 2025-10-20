@@ -1,17 +1,22 @@
 'use client';
 
-import { useTransition, useEffect } from 'react';
+import { useTransition, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth, useUser } from '@/firebase/provider';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogIn } from 'lucide-react';
+import { Loader2, LogIn, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [isPending, startTransition] = useTransition();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
@@ -23,22 +28,30 @@ export default function LoginPage() {
     }
   }, [user, isUserLoading, router]);
 
-  const handleGoogleSignIn = () => {
+  const handleEmailSignIn = () => {
+    if (!email || !password) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing Information',
+        description: 'Please enter both email and password.',
+      });
+      return;
+    }
+
     startTransition(async () => {
-      const provider = new GoogleAuthProvider();
       try {
-        await signInWithPopup(auth, provider);
+        await signInWithEmailAndPassword(auth, email, password);
         toast({
           title: 'Login Successful',
           description: 'Redirecting to host dashboard...',
         });
         // The useEffect will handle the redirect
       } catch (error: any) {
-        console.error('Google Sign-In error:', error);
+        console.error('Email Sign-In error:', error);
         toast({
           variant: 'destructive',
           title: 'Login Failed',
-          description: error.message || 'Could not sign in with Google. Please try again.',
+          description: error.message || 'Could not sign in. Please check your credentials.',
         });
       }
     });
@@ -58,17 +71,61 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-headline">Admin Login</CardTitle>
-          <CardDescription>Sign in with Google to access the host panel.</CardDescription>
+          <CardDescription>Enter your credentials to access the host panel.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button onClick={handleGoogleSignIn} className="w-full" disabled={isPending}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="admin@jukebox.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isPending}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isPending}
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isPending}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+          <Button onClick={handleEmailSignIn} className="w-full" disabled={isPending}>
             {isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <LogIn className="mr-2 h-4 w-4" />
             )}
-            Sign in with Google
+            Sign In
           </Button>
+          <div className="text-center text-sm text-muted-foreground">
+            <p>Default credentials:</p>
+            <p><strong>Email:</strong> admin@jukebox.com</p>
+            <p><strong>Password:</strong> admin123</p>
+          </div>
         </CardContent>
       </Card>
     </div>

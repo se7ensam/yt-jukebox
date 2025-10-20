@@ -8,6 +8,7 @@ interface Db {
     expiryDate: number | null;
   };
   playlist: Video[];
+  selectedPlaylistId: string | null;
 }
 
 // Initialize the mock database
@@ -18,4 +19,5 @@ export const db: Db = {
     expiryDate: null,
   },
   playlist: [],
+  selectedPlaylistId: null,
 };

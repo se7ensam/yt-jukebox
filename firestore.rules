@@ -19,6 +19,13 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // ⚠️ TEMPORARY: Allow all reads/writes for testing
+    // This overrides all other rules below
+    // TODO: Remove this and use proper security rules for production
+    match /{document=**} {
+      allow read, write: if true;
+    }
 
     /**
      * @description Controls access to user profiles. Users can only read their own profile. Admins can create and delete any profile.
@@ -78,6 +85,38 @@ service cloud.firestore {
       allow create: if isSignedIn() && isOwner(userId);
       allow update: if isSignedIn() && isOwner(userId);
       allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Controls access to user settings including playlist configuration.
+     * @path /users/{userId}/settings/{settingId}
+     * @allow (get, create, update, delete) User can manage their own settings.
+     * @deny Users cannot access other users' settings.
+     * @principle Enforces document ownership for user settings.
+     */
+    match /users/{userId}/settings/{settingId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    // YouTube authentication tokens (stored securely per user)
+    match /users/{userId}/auth/{authProvider} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+    
+    // Jukebox status (public read, host-only write)
+    // This document contains the active playlist ID and access token
+    // Guests need to read this to add songs
+    match /jukebox/{document=**} {
+      allow read: if true;  // Anyone can read (including unauthenticated server requests)
+      allow write: if isSignedIn();  // Only authenticated users can write
     }
 
     // Helper functions
