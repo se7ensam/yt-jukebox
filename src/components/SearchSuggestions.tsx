@@ -112,10 +112,10 @@ export function SearchSuggestions({ query, onSelect, onClose, isVisible }: Searc
   // Show loading state even if no suggestions yet
   if (isLoading) {
     return (
-      <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-lg shadow-lg">
-        <div className="flex items-center justify-center p-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          <span className="ml-2 text-sm text-muted-foreground">Searching...</span>
+      <div className="absolute top-full left-0 right-0 z-[100] mt-1 bg-background border border-border rounded-lg shadow-2xl w-full">
+        <div className="flex items-center justify-center p-3 sm:p-4">
+          <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-primary"></div>
+          <span className="ml-2 text-xs sm:text-sm text-muted-foreground">Searching...</span>
         </div>
       </div>
     );
@@ -124,8 +124,8 @@ export function SearchSuggestions({ query, onSelect, onClose, isVisible }: Searc
   // Show "No results" if not loading and no suggestions
   if (suggestions.length === 0) {
     return (
-      <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-lg shadow-lg">
-        <div className="p-4 text-center text-sm text-muted-foreground">
+      <div className="absolute top-full left-0 right-0 z-[100] mt-1 bg-background border border-border rounded-lg shadow-2xl w-full">
+        <div className="p-3 sm:p-4 text-center text-xs sm:text-sm text-muted-foreground">
           No results found for "{query}"
         </div>
       </div>
@@ -135,21 +135,21 @@ export function SearchSuggestions({ query, onSelect, onClose, isVisible }: Searc
   return (
     <div 
       ref={containerRef}
-      className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-lg shadow-lg max-h-80 overflow-y-auto"
+      className="absolute top-full left-0 right-0 z-[100] mt-1 bg-background border border-border rounded-lg shadow-2xl max-h-64 sm:max-h-80 overflow-y-auto w-full"
     >
       {isLoading ? (
-        <div className="flex items-center justify-center p-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          <span className="ml-2 text-sm text-muted-foreground">Searching...</span>
+        <div className="flex items-center justify-center p-3 sm:p-4">
+          <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-primary"></div>
+          <span className="ml-2 text-xs sm:text-sm text-muted-foreground">Searching...</span>
         </div>
       ) : (
-        <div className="py-2">
+        <div className="py-1 sm:py-2">
           {suggestions.map((video, index) => (
             <button
               key={video.id}
               onClick={() => handleSelect(video)}
               className={cn(
-                "w-full flex items-center gap-3 p-3 text-left hover:bg-muted/50 transition-colors",
+                "w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-3 text-left hover:bg-muted/50 transition-colors touch-manipulation",
                 selectedIndex === index && "bg-muted"
               )}
             >
@@ -157,32 +157,32 @@ export function SearchSuggestions({ query, onSelect, onClose, isVisible }: Searc
                 <img
                   src={video.thumbnail}
                   alt={video.title}
-                  className="w-16 h-12 object-cover rounded"
+                  className="w-12 h-9 sm:w-16 sm:h-12 object-cover rounded"
                   loading="lazy"
                 />
                 {video.duration && (
-                  <div className="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-1 rounded">
+                  <div className="absolute bottom-0.5 right-0.5 sm:bottom-1 sm:right-1 bg-black/80 text-white text-[9px] sm:text-xs px-0.5 sm:px-1 rounded">
                     {video.duration}
                   </div>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm line-clamp-2">
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <div className="font-medium text-xs sm:text-sm line-clamp-2">
                   {video.title}
                 </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                  <Music className="h-3 w-3" />
-                  {video.channel}
+                <div className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1 mt-0.5 sm:mt-1">
+                  <Music className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
+                  <span className="truncate">{video.channel}</span>
                 </div>
               </div>
-              <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </button>
           ))}
         </div>
       )}
       
       {suggestions.length > 0 && (
-        <div className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+        <div className="hidden sm:flex border-t border-border px-3 py-2 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
             <Clock className="h-3 w-3" />
             Use ↑↓ to navigate, Enter to select, Esc to close

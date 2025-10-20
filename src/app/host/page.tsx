@@ -144,13 +144,13 @@ function HostPageContent() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <div className="w-full max-w-2xl space-y-6">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background px-3 py-6 sm:px-4 sm:py-8 md:p-6 lg:p-8 overflow-x-hidden">
+      <div className="w-full max-w-2xl space-y-3 sm:space-y-4 md:space-y-6">
         {/* Main Host Panel */}
         <Card className="shadow-2xl">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-headline">Host Control Panel</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl md:text-3xl font-headline">Host Control Panel</CardTitle>
+            <CardDescription className="text-xs md:text-sm">
               {isAuthenticated
                 ? 'You are connected to YouTube.'
                 : 'Connect your YouTube account to get started.'}
@@ -159,9 +159,9 @@ function HostPageContent() {
           <CardContent className="flex flex-col items-center gap-6">
             {isAuthenticated ? (
               <div className="flex flex-col items-center gap-4 text-center">
-                <CheckCircle className="h-16 w-16 text-green-500" />
-                <p className="text-lg font-semibold">YouTube Account Connected!</p>
-                <p className="text-muted-foreground">
+                <CheckCircle className="h-12 w-12 md:h-16 md:w-16 text-green-500" />
+                <p className="text-base md:text-lg font-semibold">YouTube Account Connected!</p>
+                <p className="text-xs md:text-sm text-muted-foreground">
                   Guests can now add songs to your selected playlist.
                 </p>
               </div>

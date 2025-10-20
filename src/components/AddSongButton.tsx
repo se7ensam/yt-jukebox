@@ -56,7 +56,7 @@ export function AddSongButton({ video }: { video: Video }) {
       onClick={handleClick}
       disabled={state === 'pending' || state === 'success'}
       className={cn(
-        "transition-all",
+        "transition-all w-full sm:w-auto min-h-[36px] sm:min-h-[40px] text-xs sm:text-sm touch-manipulation px-3 sm:px-4",
         state === 'success' && 'bg-green-500 hover:bg-green-600',
         state === 'error' && 'bg-destructive hover:bg-destructive/90'
       )}
