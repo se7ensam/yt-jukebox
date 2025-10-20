@@ -1,21 +1,58 @@
+'use client';
+
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Music4 } from 'lucide-react';
+import { Music4, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import type { Video } from '@/lib/definitions';
+import { useState, useEffect } from 'react';
 
-export async function Playlist({ initialPlaylist }: { initialPlaylist: Video[] }) {
+export function Playlist({ initialPlaylist }: { initialPlaylist: Video[] }) {
+  const [playlist, setPlaylist] = useState<Video[]>(initialPlaylist);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const refreshPlaylist = async () => {
+    setIsRefreshing(true);
+    try {
+      const response = await fetch('/api/playlist');
+      if (response.ok) {
+        const data = await response.json();
+        setPlaylist(data.playlist || []);
+      }
+    } catch (error) {
+      console.error('Failed to refresh playlist:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(refreshPlaylist, 30000);
+    return () => clearInterval(interval);
+  }, []);
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline flex items-center gap-2">
-          <Music4 className="h-6 w-6" />
-          Current Queue
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-headline flex items-center gap-2">
+            <Music4 className="h-6 w-6" />
+            Current Queue
+          </CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={refreshPlaylist}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {initialPlaylist.length > 0 ? (
-            initialPlaylist.map((song, index) => (
+          {playlist.length > 0 ? (
+            playlist.map((song, index) => (
               <div key={`${song.id}-${index}`} className="flex items-center gap-4">
                 <span className="text-lg font-semibold text-muted-foreground">{index + 1}</span>
                 <Image
