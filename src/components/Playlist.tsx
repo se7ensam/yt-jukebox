@@ -26,11 +26,27 @@ export function Playlist({ initialPlaylist }: { initialPlaylist: Video[] }) {
     }
   };
 
+  // Initial fetch on mount
+  useEffect(() => {
+    refreshPlaylist();
+  }, []);
+
   // Auto-refresh every 30 seconds
   useEffect(() => {
     const interval = setInterval(refreshPlaylist, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Listen for song added events and refresh immediately
+  useEffect(() => {
+    const handleSongAdded = () => {
+      refreshPlaylist();
+    };
+
+    window.addEventListener('songAdded', handleSongAdded);
+    return () => window.removeEventListener('songAdded', handleSongAdded);
+  }, []);
+
   return (
     <Card>
       <CardHeader>

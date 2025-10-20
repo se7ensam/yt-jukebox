@@ -32,6 +32,11 @@ export function AddSongButton({ video }: { video: Video }) {
         setState('error');
       } else {
         setState('success');
+        
+        // Dispatch custom event to trigger playlist refresh
+        window.dispatchEvent(new CustomEvent('songAdded', { 
+          detail: { video } 
+        }));
       }
 
       setTimeout(() => setState('idle'), 2000);
