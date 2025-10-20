@@ -1,7 +1,6 @@
 import { Header } from '@/components/Header';
 import { Playlist } from '@/components/Playlist';
 import { SearchComponent } from '@/components/SearchComponent';
-import { HostStatus } from '@/components/HostStatus';
 import { JukeboxStatusChecker } from '@/components/JukeboxStatusChecker';
 import { getPlaylist } from '@/lib/youtube';
 
@@ -15,7 +14,6 @@ export default async function Home() {
         <div className="mx-auto grid w-full max-w-6xl gap-6">
           <h1 className="text-3xl font-semibold font-headline">Welcome to TubeQueue</h1>
           <p>Scan the QR code, find your favorite song, and add it to the queue!</p>
-          <HostStatus />
           <JukeboxStatusChecker />
         </div>
         <div className="mx-auto grid w-full max-w-6xl items-start gap-6 md:grid-cols-[1fr_350px] lg:grid-cols-[1fr_400px]">
