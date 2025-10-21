@@ -19,10 +19,10 @@ export function JukeboxStatusChecker() {
       const data = await response.json();
       
       // Check if jukebox is fully ready
+      // Note: Tokens are managed server-side, so we only check public status
       const ready = data.isActive && 
                    data.selectedPlaylistId && 
-                   data.accessToken && 
-                   data.tokenExpiry > Date.now();
+                   data.hostUserId;
       
       setIsReady(ready);
     } catch (err) {
@@ -36,8 +36,8 @@ export function JukeboxStatusChecker() {
   // Check status on mount
   useEffect(() => {
     checkStatus();
-    // Re-check every 30 seconds
-    const interval = setInterval(checkStatus, 30000);
+    // Re-check every 60 seconds (reduced from 30s for better performance)
+    const interval = setInterval(checkStatus, 60000);
     return () => clearInterval(interval);
   }, []);
 
