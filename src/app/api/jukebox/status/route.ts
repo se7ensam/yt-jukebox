@@ -13,8 +13,6 @@ export async function GET() {
         isActive: false,
         selectedPlaylistId: null,
         hostUserId: null,
-        accessToken: null,
-        tokenExpiry: null,
         lastUpdated: null,
         message: 'Jukebox not set up yet'
       });
@@ -23,8 +21,8 @@ export async function GET() {
     console.log('Jukebox Status API: Status found');
     console.log('- Is Active:', status.isActive);
     console.log('- Playlist ID:', status.selectedPlaylistId);
-    console.log('- Has Access Token:', !!status.accessToken);
-    console.log('- Token Expired:', status.tokenExpiry ? status.tokenExpiry < Date.now() : 'N/A');
+    console.log('- Host User ID:', status.hostUserId);
+    console.log('- Note: Tokens managed securely server-side');
     
     return NextResponse.json(status);
   } catch (error) {

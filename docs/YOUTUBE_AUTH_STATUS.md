@@ -62,7 +62,7 @@ npm run dev
 
 ### Step 5: Test YouTube Authentication
 1. Go to `http://localhost:9002/login`
-2. Login with admin credentials (admin@jukebox.com / admin123)
+2. Login with admin credentials
 3. Click "Connect with Google" on the host page
 4. You'll be redirected to **real Google OAuth**
 5. Grant YouTube permissions
@@ -157,7 +157,7 @@ Console will show:
 2. ✅ Client secret never exposed to client
 3. ✅ State parameter for CSRF protection
 4. ✅ Secure token storage
-5. ⚠️ **TODO**: Move tokens to Firestore (currently in-memory)
+5. ✅ **Tokens stored in Firestore with auto-refresh** (see `docs/TOKEN_SECURITY.md`)
 
 ## 📝 **Notes**
 
@@ -165,3 +165,4 @@ Console will show:
 - **Real auth** activates automatically when credentials present
 - **Console logs** show which auth method is being used
 - **Error messages** provide debugging information
+

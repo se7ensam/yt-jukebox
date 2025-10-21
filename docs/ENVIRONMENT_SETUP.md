@@ -108,3 +108,4 @@ The project is currently configured with these Firebase settings:
 - Restart the development server after changing `.env.local`
 - Ensure variable names start with `NEXT_PUBLIC_` for client-side access
 - Check for typos in variable names
+

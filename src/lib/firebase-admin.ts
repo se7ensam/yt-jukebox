@@ -35,6 +35,14 @@ export function initializeFirebaseAdmin() {
 }
 
 /**
+ * Get Firestore Admin instance (bypasses security rules)
+ */
+export function getFirestoreAdmin(): Firestore {
+  const { firestore } = initializeFirebaseAdmin();
+  return firestore;
+}
+
+/**
  * Get YouTube tokens for a user (server-side, bypasses security rules)
  */
 export async function getYouTubeTokensAdmin(userId: string) {

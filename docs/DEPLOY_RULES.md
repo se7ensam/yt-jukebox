@@ -102,3 +102,4 @@ Copy this link to go directly to rules editor:
 ```
 https://console.firebase.google.com/project/studio-8682155854-b49db/firestore/rules
 ```
+
