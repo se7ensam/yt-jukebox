@@ -40,12 +40,7 @@ A collaborative YouTube jukebox application built with Next.js and Firebase.
 
 ## Environment Setup
 
-See [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) for detailed environment configuration instructions.
-
-## Default Admin Credentials
-
-- **Email:** `admin@jukebox.com`
-- **Password:** `admin123`
+See [ENVIRONMENT_SETUP.md](./docs/ENVIRONMENT_SETUP.md) for detailed environment configuration instructions.
 
 ## Available Scripts
 

@@ -121,11 +121,6 @@ export default function LoginPage() {
             )}
             Sign In
           </Button>
-          <div className="text-center text-sm text-muted-foreground">
-            <p>Default credentials:</p>
-            <p><strong>Email:</strong> admin@jukebox.com</p>
-            <p><strong>Password:</strong> admin123</p>
-          </div>
         </CardContent>
       </Card>
     </div>

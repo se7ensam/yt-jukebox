@@ -4,8 +4,7 @@ export interface JukeboxStatus {
   isActive: boolean;
   selectedPlaylistId: string | null;
   hostUserId: string;
-  accessToken: string | null;  // Store access token for guest access
-  tokenExpiry: number | null;
+  // Removed: accessToken and tokenExpiry (now handled server-side only)
   lastUpdated: number;
 }
 
@@ -30,6 +29,7 @@ export async function getJukeboxStatus(firestore: Firestore): Promise<JukeboxSta
 
 /**
  * Update jukebox status (only host can do this)
+ * Tokens are stored separately in user's private auth collection
  */
 export async function updateJukeboxStatus(
   firestore: Firestore,
@@ -37,22 +37,20 @@ export async function updateJukeboxStatus(
     isActive: boolean;
     selectedPlaylistId: string | null;
     hostUserId: string;
-    accessToken?: string | null;
-    tokenExpiry?: number | null;
   }
 ): Promise<void> {
   try {
     const statusRef = doc(firestore, 'jukebox', 'status');
     
     const jukeboxStatus: JukeboxStatus = {
-      ...status,
-      accessToken: status.accessToken || null,
-      tokenExpiry: status.tokenExpiry || null,
+      isActive: status.isActive,
+      selectedPlaylistId: status.selectedPlaylistId,
+      hostUserId: status.hostUserId,
       lastUpdated: Date.now(),
     };
     
     await setDoc(statusRef, jukeboxStatus);
-    console.log('Updated jukebox status (with access token for guest access)');
+    console.log('Updated jukebox status (tokens managed separately server-side)');
   } catch (error) {
     console.error('Failed to update jukebox status:', error);
     throw error;

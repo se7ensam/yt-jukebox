@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getJukeboxStatusServer } from '@/lib/firebase-server';
+import { getJukeboxStatusWithValidToken } from '@/lib/youtube-token-refresh';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
     console.log('- Video ID:', videoId);
     console.log('- Video Title:', videoTitle);
 
-    // Get jukebox status (public document, includes access token)
-    const jukeboxStatus = await getJukeboxStatusServer();
+    // Get jukebox status with automatically refreshed token
+    const jukeboxStatus = await getJukeboxStatusWithValidToken();
     
     if (!jukeboxStatus || !jukeboxStatus.isActive) {
       return NextResponse.json(
@@ -35,31 +35,15 @@ export async function POST(request: NextRequest) {
     
     if (!jukeboxStatus.accessToken) {
       return NextResponse.json(
-        { error: 'Host is not connected to YouTube. Please ask the host to log in.' },
+        { error: 'Unable to authenticate. Please ask the host to reconnect to YouTube.' },
         { status: 403 }
       );
     }
     
-    const { selectedPlaylistId: playlistId, accessToken, tokenExpiry } = jukeboxStatus;
+    const { selectedPlaylistId: playlistId, accessToken } = jukeboxStatus;
     
     console.log('- Playlist ID:', playlistId);
-    console.log('- Access Token found:', !!accessToken);
-    
-    // Check if token is expired
-    if (tokenExpiry && tokenExpiry < Date.now()) {
-      console.log('- Access Token expired');
-      return NextResponse.json(
-        { error: 'Host authentication expired. Please ask the host to reconnect to YouTube.' },
-        { status: 403 }
-      );
-    }
-
-    if (!accessToken) {
-      return NextResponse.json(
-        { error: 'Host is not connected to YouTube. Please ask the host to log in and select a playlist.' },
-        { status: 403 }
-      );
-    }
+    console.log('- Valid Access Token obtained:', !!accessToken);
 
     // Add to YouTube playlist using host's access token
     const response = await fetch(

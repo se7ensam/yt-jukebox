@@ -339,21 +339,19 @@ export async function addVideoToPlaylist(video: Video): Promise<void> {
   }
 }
 
-// Simulate fetching the current playlist
+// Fetch the current playlist from YouTube
 export async function getPlaylist(): Promise<Video[]> {
   try {
-    // Try to fetch the actual YouTube playlist songs
-    const { getJukeboxStatusServer } = await import('./firebase-server');
-    
-    // Get jukebox status to find the selected playlist
-    const status = await getJukeboxStatusServer();
+    // Get jukebox status with valid access token (auto-refreshed if needed)
+    const { getJukeboxStatusWithValidToken } = await import('./youtube-token-refresh');
+    const status = await getJukeboxStatusWithValidToken();
     
     if (!status || !status.selectedPlaylistId || !status.accessToken) {
       console.log('No active jukebox or playlist selected, returning empty queue');
       return [];
     }
     
-    // Fetch playlist items from YouTube
+    // Fetch playlist items from YouTube with valid token
     const response = await fetch(
       `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${status.selectedPlaylistId}&maxResults=50`,
       {
@@ -485,35 +483,33 @@ export async function setSelectedPlaylist(playlistId: string): Promise<void> {
   // Update user's personal playlist settings
   await updateSelectedPlaylist(firestore, playlistId);
   
-  // Get the latest tokens from Firestore to ensure we have the access token
+  // Verify tokens exist in user's auth collection
   const { getYouTubeTokens } = await import('./youtube-tokens-db');
   const tokens = await getYouTubeTokens(firestore);
   
   if (!tokens || !tokens.accessToken) {
-    console.error('❌ Cannot update jukebox status: No access token found!');
+    console.error('❌ Cannot update jukebox status: No tokens found!');
     throw new Error('No access token available. Please reconnect to YouTube.');
   }
   
-  // Update public jukebox status so guests know the jukebox is active
-  // Also store the access token so guests can add songs
+  // Update public jukebox status (without tokens)
+  // Tokens are stored securely in user's private auth collection
   console.log('🎵 Updating jukebox status in Firestore...');
   console.log('- isActive: true');
   console.log('- selectedPlaylistId:', playlistId);
   console.log('- hostUserId:', user.uid);
-  console.log('- accessToken:', tokens.accessToken ? `${tokens.accessToken.substring(0, 20)}...` : 'NOT SET');
-  console.log('- tokenExpiry:', tokens.expiryDate ? new Date(tokens.expiryDate).toISOString() : 'NOT SET');
+  console.log('- Tokens stored separately in: /users/{userId}/auth/youtube');
   
   const { updateJukeboxStatus } = await import('./jukebox-status-db');
   await updateJukeboxStatus(firestore, {
     isActive: true,
     selectedPlaylistId: playlistId,
     hostUserId: user.uid,
-    accessToken: tokens.accessToken,
-    tokenExpiry: tokens.expiryDate,
   });
   
   console.log('✅ Jukebox status updated successfully in Firestore!');
-  console.log('📍 Document path: /jukebox/status');
+  console.log('📍 Public status: /jukebox/status');
+  console.log('🔐 Tokens stored securely: /users/' + user.uid + '/auth/youtube');
   
   // Also update in-memory for backward compatibility
   db.selectedPlaylistId = playlistId;
