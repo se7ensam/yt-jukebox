@@ -2,7 +2,7 @@ import { Header } from '@/components/Header';
 import { Playlist } from '@/components/Playlist';
 import { SearchComponent } from '@/components/SearchComponent';
 import { JukeboxStatusChecker } from '@/components/JukeboxStatusChecker';
-import { getPlaylist } from '@/lib/youtube';
+import { getPlaylist } from '@/lib/youtube-server';
 
 export default async function Home() {
   const playlist = await getPlaylist();

@@ -26,14 +26,10 @@ export function Playlist({ initialPlaylist }: { initialPlaylist: Video[] }) {
     }
   };
 
-  // Initial fetch on mount
+  // Auto-refresh every 60 seconds (reduced from 30s for better performance)
+  // Note: Songs added by guests trigger immediate refresh via 'songAdded' event
   useEffect(() => {
-    refreshPlaylist();
-  }, []);
-
-  // Auto-refresh every 30 seconds
-  useEffect(() => {
-    const interval = setInterval(refreshPlaylist, 30000);
+    const interval = setInterval(refreshPlaylist, 60000);
     return () => clearInterval(interval);
   }, []);
 

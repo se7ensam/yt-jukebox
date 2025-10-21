@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPlaylist } from '@/lib/youtube';
+import { getPlaylist } from '@/lib/youtube-server';
 
 export async function GET() {
   const timestamp = new Date().toISOString();

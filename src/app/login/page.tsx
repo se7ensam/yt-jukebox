@@ -79,7 +79,7 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
-              placeholder="admin@jukebox.com"
+              placeholder="Enter email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isPending}

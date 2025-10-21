@@ -3,8 +3,8 @@
  * Handles automatic token renewal using refresh tokens
  */
 
-import { Firestore } from 'firebase-admin/firestore';
-import { getFirestoreAdmin } from './firebase-admin';
+import { initializeFirebaseServer } from './firebase-server';
+import { doc, getDoc } from 'firebase/firestore';
 
 export interface TokenData {
   accessToken: string;
@@ -18,22 +18,18 @@ export interface TokenData {
  */
 export async function getValidAccessTokenServer(userId: string): Promise<string | null> {
   try {
-    const db = getFirestoreAdmin();
+    const { firestore } = initializeFirebaseServer();
     
     // Get tokens from user's private auth storage
-    const tokenDoc = await db
-      .collection('users')
-      .doc(userId)
-      .collection('auth')
-      .doc('youtube')
-      .get();
+    const tokenRef = doc(firestore, 'users', userId, 'auth', 'youtube');
+    const tokenSnap = await getDoc(tokenRef);
     
-    if (!tokenDoc.exists) {
+    if (!tokenSnap.exists()) {
       console.log('No YouTube tokens found for user:', userId);
       return null;
     }
     
-    const tokenData = tokenDoc.data() as TokenData;
+    const tokenData = tokenSnap.data() as TokenData;
     const now = Date.now();
     
     // If token is still valid (with 5-minute buffer), return it
@@ -58,7 +54,8 @@ export async function getValidAccessTokenServer(userId: string): Promise<string 
     }
     
     // Update stored tokens
-    await tokenDoc.ref.update({
+    const { updateDoc } = await import('firebase/firestore');
+    await updateDoc(tokenRef, {
       accessToken: newTokenData.accessToken,
       expiryDate: newTokenData.expiryDate,
       // Keep the same refresh token (or update if provided)
@@ -128,16 +125,17 @@ async function refreshAccessToken(refreshToken: string): Promise<TokenData | nul
  */
 export async function getJukeboxStatusWithValidToken() {
   try {
-    const db = getFirestoreAdmin();
+    const { firestore } = initializeFirebaseServer();
     
     // Get public status
-    const statusDoc = await db.collection('jukebox').doc('status').get();
+    const statusRef = doc(firestore, 'jukebox', 'status');
+    const statusSnap = await getDoc(statusRef);
     
-    if (!statusDoc.exists) {
+    if (!statusSnap.exists()) {
       return null;
     }
     
-    const status = statusDoc.data();
+    const status = statusSnap.data();
     
     if (!status || !status.isActive || !status.hostUserId) {
       return null;

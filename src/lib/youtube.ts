@@ -339,51 +339,8 @@ export async function addVideoToPlaylist(video: Video): Promise<void> {
   }
 }
 
-// Fetch the current playlist from YouTube
-export async function getPlaylist(): Promise<Video[]> {
-  try {
-    // Get jukebox status with valid access token (auto-refreshed if needed)
-    const { getJukeboxStatusWithValidToken } = await import('./youtube-token-refresh');
-    const status = await getJukeboxStatusWithValidToken();
-    
-    if (!status || !status.selectedPlaylistId || !status.accessToken) {
-      console.log('No active jukebox or playlist selected, returning empty queue');
-      return [];
-    }
-    
-    // Fetch playlist items from YouTube with valid token
-    const response = await fetch(
-      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${status.selectedPlaylistId}&maxResults=50`,
-      {
-        headers: {
-          'Authorization': `Bearer ${status.accessToken}`,
-        },
-      }
-    );
-    
-    if (!response.ok) {
-      console.error('Failed to fetch playlist items from YouTube');
-      return [];
-    }
-    
-    const data = await response.json();
-    
-    // Transform YouTube playlist items to Video format
-    const videos: Video[] = data.items?.map((item: any) => ({
-      id: item.snippet.resourceId.videoId,
-      title: item.snippet.title,
-      channel: item.snippet.channelTitle || item.snippet.videoOwnerChannelTitle || 'Unknown',
-      thumbnail: item.snippet.thumbnails?.default?.url || 'https://placehold.co/120x90/1f2937/ffffff?text=Video',
-    })) || [];
-    
-    console.log(`Fetched ${videos.length} songs from YouTube playlist`);
-    return videos;
-    
-  } catch (error) {
-    console.error('Failed to get playlist from YouTube, returning empty array:', error);
-    return [];
-  }
-}
+// Note: getPlaylist() has been moved to youtube-server.ts
+// to avoid bundling Firebase Admin SDK in client code
 
 // Fetch user's real YouTube playlists
 export async function getUserPlaylists(): Promise<Playlist[]> {
