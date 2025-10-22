@@ -9,6 +9,8 @@ import { usePlaylistSettings } from '@/hooks/use-playlist-settings';
 import { CheckCircle, LogIn, LogOut, Loader2, Music, Settings } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useEffect, useState, useTransition, Suspense } from 'react';
+import AutomixPlayer from '@/components/AutomixPlayer';
+import type { Video } from '@/lib/definitions';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signOut } from 'firebase/auth';
 import { useAuth } from '@/firebase/provider';
@@ -33,6 +35,7 @@ function HostPageContent() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [isLoadingPlaylists, setIsLoadingPlaylists] = useState(false);
+  const [queueVideos, setQueueVideos] = useState<Video[]>([]);
 
   useEffect(() => {
     // Redirect to login if user is not loaded and not present
@@ -84,6 +87,31 @@ function HostPageContent() {
       checkYouTubeAuth();
     }
   }, [user, isUserLoading, searchParams, router]);
+
+  // Fetch current queue videos periodically (host-side)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    const fetchQueue = async () => {
+      try {
+        const res = await fetch('/api/playlist');
+        if (!res.ok) return;
+        const data = await res.json();
+        const vids: Video[] = (data.playlist || []);
+        if (!cancelled) {
+          // Only update if the videos actually changed to avoid restarting player
+          setQueueVideos(prev => {
+            if (prev.length !== vids.length) return vids;
+            const hasChanged = prev.some((p, i) => p.id !== vids[i]?.id);
+            return hasChanged ? vids : prev;
+          });
+        }
+      } catch (_) {}
+    };
+    fetchQueue();
+    const i = setInterval(fetchQueue, 60000);
+    return () => { cancelled = true; clearInterval(i); };
+  }, [isAuthenticated]);
 
   // Effect to ensure selected playlist is properly displayed when both playlists and settings are loaded
   useEffect(() => {
@@ -264,6 +292,28 @@ function HostPageContent() {
                     </div>
                   )}
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Automix Player */}
+        {isAuthenticated && (
+          <Card className="shadow-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Automix Player
+              </CardTitle>
+              <CardDescription>
+                Seamless crossfades between tracks. Click Play to start.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {queueVideos.length > 0 ? (
+                <AutomixPlayer videos={queueVideos} />
+              ) : (
+                <div className="text-sm text-muted-foreground">No tracks in the queue yet. Add songs to start playback.</div>
               )}
             </CardContent>
           </Card>
