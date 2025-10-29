@@ -4,8 +4,6 @@ A collaborative YouTube jukebox application built with Next.js and Firebase.
 
 ## Features
 
-- 🎵 **Collaborative Playlist** - Guests can add songs to a shared playlist
-- 🔐 **Admin Authentication** - Secure admin login with username/password
 - 📱 **QR Code Sharing** - Easy sharing via QR codes
 - 🎯 **Playlist Management** - Select which YouTube playlist to use
 - 🔄 **Real-time Updates** - Live playlist updates across all devices
