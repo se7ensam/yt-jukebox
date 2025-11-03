@@ -17,7 +17,7 @@ A collaborative YouTube jukebox application built with Next.js and Firebase.
    cd yt-jukebox
    ```
 
-2. **Install dependencies**
+2. **Install dependency**
    ```bash
    npm install
    ```
